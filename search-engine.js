@@ -263,11 +263,22 @@
   // coincidence. Used only as a last resort, after media has a chance.
   function findReferenceBookLoose(ref, catalog){
     const refWords = ref.split(/\s+/).filter(w=>w.length>3);
+    if(!refWords.length) return null;
+    // Real bug (found comparing two schools): this used plain substring
+    // matching and accepted ONE shared word, so for a school that doesn't
+    // own the book, "something like james bond" latched onto "Vagabond"
+    // ("bond" inside "vagabond") and recommended whatever resembled
+    // THAT. Now: whole words only, and a multi-word reference must match
+    // most of its words (at least 2), so one coincidental shared word
+    // can never pick the reference book.
+    const esc = w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const wordRes = refWords.map(w => new RegExp('\\b' + esc(w) + 's?\\b'));
+    const needed = refWords.length === 1 ? 1 : Math.max(2, Math.ceil(refWords.length * 0.6));
     const wordCandidates = [];
     catalog.forEach(b=>{
       const t = b.title.toLowerCase();
-      const matches = refWords.filter(w=>t.includes(w)).length;
-      if(matches > 0) wordCandidates.push({book:b, score: matches});
+      const matches = wordRes.filter(re=>re.test(t)).length;
+      if(matches >= needed) wordCandidates.push({book:b, score: matches});
     });
     return wordCandidates.length ? pickBestBook(wordCandidates) : null;
   }

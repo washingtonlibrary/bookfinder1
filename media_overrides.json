@@ -763,5 +763,19 @@
     "protagonist": [
       "male"
     ]
+  },
+  "james bond": {
+    "display": "James Bond",
+    "genres": [
+      "spy",
+      "thriller"
+    ],
+    "moods": [
+      "suspenseful"
+    ],
+    "themes": [
+      "espionage"
+    ],
+    "protagonist": []
   }
 }
