@@ -70,7 +70,7 @@
       "trauma":"trauma","healing":"healing","first love":"first love","betrayal":"betrayal",
       "power":"power","war":"war","magic":"magic","found family":"found family","love":"love",
       "class conflict":"class conflict","social class":"class conflict","rich and poor":"class conflict","class differences":"class conflict",
-      "myth":"myth","mythology":"myth","ethics":"ethics",
+      "myth":"myth","mythology":"myth","ethics":"morality","moral":"morality","morals":"morality","morality":"morality",
       // "secret" used to map only to "secret societies" (1 book); "secrets"
       // is the tag books actually carry (also covers "secret society").
       "secret":"secrets","secrets":"secrets",
@@ -202,7 +202,17 @@
   }
 
   function normalizeAuthor(a){
-    return (a || '').toLowerCase().replace(/[.,]+$/,'').trim();
+    // Records write the same author several ways ("Riordan, Rick.",
+    // "Riordan, Rick", "Rick Riordan."). Put them all in one form:
+    // "first last", lowercase, no punctuation, no birth/death years.
+    let s = (a || '').toLowerCase()
+      .replace(/\b\d{4}\s*-\s*(\d{4})?/g, ' ')
+      .replace(/\(.*?\)/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+    const parts = s.split(',').map(x => x.replace(/[^a-z0-9' -]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+    if (parts.length >= 2) s = parts[1] + ' ' + parts[0];
+    else s = (parts[0] || '');
+    return s.replace(/\s+/g, ' ').trim();
   }
 
   function isSameSeriesOrWork(refTitle, candidateTitle){
